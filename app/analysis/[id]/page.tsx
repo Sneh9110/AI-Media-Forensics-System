@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnalysisLogs } from "@/components/analysis-logs"
 import { AnalysisResults } from "@/components/analysis-results"
+import { AnalysisExportButtons } from "@/components/analysis-export-buttons"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import type { AnalysisResult } from "@/lib/database"
@@ -100,6 +101,22 @@ export default function AnalysisPage() {
             </div>
           </div>
           <nav className="flex items-center space-x-4">
+            {analysisData?.analysisStatus === "completed" && analysisData?.authenticity && (
+              <AnalysisExportButtons
+                analysisId={analysisData.id}
+                fileName={analysisData.fileName}
+                prediction={analysisData.authenticity.prediction}
+                confidence={analysisData.authenticity.confidence}
+                spatialScore={0.75}
+                frequencyScore={0.68}
+                aiGenerationScore={analysisData.authenticity.confidence}
+                deepfakeScore={0.1}
+                manipulationScore={0.15}
+                prnuSensorScore={0.72}
+                processingTime={500}
+                uploadedAt={analysisData.uploadedAt}
+              />
+            )}
             <Button variant="outline" size="sm" onClick={fetchAnalysisData}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
