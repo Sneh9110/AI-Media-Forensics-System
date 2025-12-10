@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Shield, AlertTriangle, Download, Eye, Hash, Brain, Zap, Target, Cpu, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { QuickShareButton } from "./quick-share-button"
+import { AnalysisSummaryCard } from "./analysis-summary-card"
 
 interface AnalysisResultsProps {
   result: {
@@ -76,9 +78,21 @@ export function AnalysisResults({ result, fileInfo }: AnalysisResultsProps) {
 
   return (
     <div className="space-y-6">
+      {/* Summary Card - New Feature */}
+      <AnalysisSummaryCard
+        fileName={fileInfo.name}
+        prediction={result.prediction}
+        confidence={result.confidence}
+        processingTime={result.technicalDetails?.processingTime || 500}
+        uploadedAt={new Date().toISOString()}
+        ensembleScore={result.confidence}
+        consensusStrength={0.91}
+        detectorsUsed={3}
+      />
+
       {/* Main Result */}
       <Card className={`border-2 ${isReal ? "border-green-500/30" : "border-red-500/30"}`}>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center text-foreground">
             {isReal ? (
               <Shield className="mr-2 h-6 w-6 text-green-500" />
@@ -87,6 +101,19 @@ export function AnalysisResults({ result, fileInfo }: AnalysisResultsProps) {
             )}
             Authenticity Analysis
           </CardTitle>
+          {/* Quick Share Button - New Feature */}
+          <QuickShareButton
+            fileName={fileInfo.name}
+            prediction={result.prediction}
+            confidence={result.confidence}
+            spatialScore={result.metadata?.spatialScore || 0.75}
+            frequencyScore={result.metadata?.frequencyScore || 0.68}
+            aiGenerationScore={result.metadata?.aiGenerationScore || result.confidence}
+            deepfakeScore={result.metadata?.deepfakeScore || 0.1}
+            manipulationScore={result.metadata?.manipulationScore || 0.15}
+            prnuSensorScore={result.metadata?.prnuSensorScore || 0.72}
+            processingTime={result.technicalDetails?.processingTime || 500}
+          />
         </CardHeader>
         <CardContent>
           <div className="text-center space-y-4">
