@@ -88,6 +88,9 @@ export default function UploadPage() {
             <Link href="/dashboard">
               <Button variant="outline">Dashboard</Button>
             </Link>
+            <Link href="/system-status">
+              <Button variant="outline">System Status</Button>
+            </Link>
           </nav>
         </div>
       </header>
