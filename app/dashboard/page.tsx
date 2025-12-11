@@ -134,8 +134,11 @@ export default function DashboardPage() {
             </div>
           </div>
           <nav className="flex items-center space-x-4">
+            <Link href="/collaboration">
+              <Button variant="outline">Collaboration</Button>
+            </Link>
             <Link href="/system-status">
-              <Button variant="outline" size="sm">System Status</Button>
+              <Button variant="outline">System Status</Button>
             </Link>
             <Link href="/upload">
               <Button>New Analysis</Button>

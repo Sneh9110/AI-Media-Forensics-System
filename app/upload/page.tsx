@@ -85,6 +85,9 @@ export default function UploadPage() {
             </div>
           </div>
           <nav className="flex items-center space-x-4">
+            <Link href="/batch-processing">
+              <Button variant="outline">Batch Processing</Button>
+            </Link>
             <Link href="/dashboard">
               <Button variant="outline">Dashboard</Button>
             </Link>
