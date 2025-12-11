@@ -134,6 +134,9 @@ export default function DashboardPage() {
             </div>
           </div>
           <nav className="flex items-center space-x-4">
+            <Link href="/analytics">
+              <Button variant="outline">Analytics</Button>
+            </Link>
             <Link href="/collaboration">
               <Button variant="outline">Collaboration</Button>
             </Link>
