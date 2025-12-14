@@ -163,3 +163,33 @@ export async function getDatabase(): Promise<JSONDatabase> {
   }
   return dbInstance
 }
+/**
+ * Validate analysis result data integrity
+ * Ensures all required fields are present and valid
+ */
+export function validateAnalysisResult(result: any): {
+  valid: boolean
+  errors: string[]
+} {
+  const errors: string[] = []
+
+  if (!result.id) errors.push("Analysis ID is required")
+  if (!result.userId) errors.push("User ID is required")
+  if (!result.fileName) errors.push("File name is required")
+  if (result.fileSize === undefined) errors.push("File size is required")
+  if (!result.uploadedAt) errors.push("Upload timestamp is required")
+  if (!["pending", "processing", "completed", "failed"].includes(result.analysisStatus)) {
+    errors.push("Invalid analysis status")
+  }
+
+  if (result.authenticity) {
+    if (!["real", "synthetic"].includes(result.authenticity.prediction)) {
+      errors.push("Invalid authenticity prediction")
+    }
+    if (result.authenticity.confidence < 0 || result.authenticity.confidence > 1) {
+      errors.push("Confidence must be between 0 and 1")
+    }
+  }
+
+  return { valid: errors.length === 0, errors }
+}
