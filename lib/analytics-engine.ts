@@ -407,5 +407,28 @@ class AnalyticsEngine {
   }
 }
 
-// Export singleton instance
-export const analyticsEngine = new AnalyticsEngine()
+/**
+ * Calculate detection quality metrics
+ * Determines overall quality of detection results
+ */
+export function calculateDetectionQuality(
+  analyzeData: { confidence: number; pattern: string; timestamp: Date }[]
+): { overallScore: number; qualityLevel: "excellent" | "good" | "fair" | "poor" } {
+  if (analyzeData.length === 0) {
+    return { overallScore: 0, qualityLevel: "poor" }
+  }
+
+  const avgConfidence = analyzeData.reduce((sum, d) => sum + d.confidence, 0) / analyzeData.length
+  const consistencyScore = analyzeData.length > 1 ? Math.min(1, analyzeData.length / 100) : 0.5
+
+  const overallScore = avgConfidence * 0.7 + consistencyScore * 0.3
+
+  let qualityLevel: "excellent" | "good" | "fair" | "poor"
+  if (overallScore >= 0.85) qualityLevel = "excellent"
+  else if (overallScore >= 0.7) qualityLevel = "good"
+  else if (overallScore >= 0.5) qualityLevel = "fair"
+  else qualityLevel = "poor"
+
+  return { overallScore, qualityLevel }
+}
+
