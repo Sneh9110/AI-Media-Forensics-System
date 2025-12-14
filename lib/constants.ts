@@ -94,3 +94,10 @@ export const REPORT_FORMATS = {
   PDF: "pdf",
   JSON: "json",
 } as const
+// Cache configuration
+export const CACHE_CONFIG = {
+  ANALYSIS_RESULTS_TTL: 3600, // 1 hour in seconds
+  HEATMAP_DATA_TTL: 1800, // 30 minutes
+  ML_MODEL_CACHE_TTL: 7200, // 2 hours
+  MAX_CACHE_SIZE: 500 * 1024 * 1024, // 500MB
+} as const
