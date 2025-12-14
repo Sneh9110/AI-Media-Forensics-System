@@ -486,3 +486,25 @@ This determination is based on [...specific artifacts found...] and represents t
 
 // Export singleton
 export const forensicReportGenerator = new ForensicReportGenerator()
+
+/**
+ * Utility function to validate report integrity
+ * Verifies chain of custody and metadata completeness
+ */
+export function validateReportIntegrity(report: CourtAdmissibilityReport): {
+  valid: boolean
+  errors: string[]
+} {
+  const errors: string[] = []
+
+  if (!report.caseNumber) errors.push("Case number is required")
+  if (!report.chainOfCustody) errors.push("Chain of custody is required")
+  if (!report.forensicMetadata) errors.push("Forensic metadata is required")
+  if (!report.forensicMetadata?.analyzerName) errors.push("Analyzer name is required")
+  if (!report.findings || report.findings.length === 0) errors.push("Findings are required")
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  }
+}
