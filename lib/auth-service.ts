@@ -694,5 +694,23 @@ class AuthenticationService {
   }
 }
 
-// Export singleton instance
-export const authService = new AuthenticationService()
+/**
+ * Authentication error handler
+ * Provides standardized error responses for auth failures
+ */
+export function handleAuthError(error: any): { code: string; message: string } {
+  if (error.message.includes("Invalid credentials")) {
+    return { code: "AUTH_001", message: "Invalid email or password" }
+  }
+  if (error.message.includes("User not found")) {
+    return { code: "AUTH_002", message: "User account does not exist" }
+  }
+  if (error.message.includes("Email already registered")) {
+    return { code: "AUTH_003", message: "Email is already registered" }
+  }
+  if (error.message.includes("Token expired")) {
+    return { code: "AUTH_004", message: "Authentication token has expired" }
+  }
+  return { code: "AUTH_000", message: "Authentication failed" }
+}
+
