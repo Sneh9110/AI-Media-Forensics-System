@@ -118,5 +118,40 @@ export class AnalysisCache {
   }
 }
 
+/**
+ * Application logging utility
+ * Provides structured logging with levels
+ */
+export class Logger {
+  private logLevel: "debug" | "info" | "warn" | "error" = "info"
+
+  constructor(level?: "debug" | "info" | "warn" | "error") {
+    if (level) this.logLevel = level
+  }
+
+  debug(message: string, data?: any) {
+    if (["debug"].includes(this.logLevel)) {
+      console.log(`[DEBUG] ${new Date().toISOString()}: ${message}`, data || "")
+    }
+  }
+
+  info(message: string, data?: any) {
+    if (["debug", "info"].includes(this.logLevel)) {
+      console.log(`[INFO] ${new Date().toISOString()}: ${message}`, data || "")
+    }
+  }
+
+  warn(message: string, data?: any) {
+    if (["debug", "info", "warn"].includes(this.logLevel)) {
+      console.warn(`[WARN] ${new Date().toISOString()}: ${message}`, data || "")
+    }
+  }
+
+  error(message: string, error?: any) {
+    console.error(`[ERROR] ${new Date().toISOString()}: ${message}`, error || "")
+  }
+}
+
 // Singleton instance
 export const analysisCache = new AnalysisCache()
+export const logger = new Logger("info")
