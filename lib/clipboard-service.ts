@@ -113,3 +113,50 @@ export async function copyAnalysisToClipboard(result: AnalysisResultText): Promi
   const text = formatAnalysisAsText(result)
   return copyToClipboard(text)
 }
+/**
+ * Data encryption utility for sensitive analysis results
+ */
+export class DataEncryption {
+  private static readonly ALGORITHM = "aes-256-cbc"
+
+  /**
+   * Encrypt sensitive data using simple XOR cipher
+   * For production use bcrypt or crypto-js
+   */
+  static encryptData(data: string, key: string): string {
+    let encrypted = ""
+    for (let i = 0; i < data.length; i++) {
+      const dataChar = data.charCodeAt(i)
+      const keyChar = key.charCodeAt(i % key.length)
+      encrypted += String.fromCharCode(dataChar ^ keyChar)
+    }
+    return Buffer.from(encrypted).toString("base64")
+  }
+
+  /**
+   * Decrypt data using simple XOR cipher
+   */
+  static decryptData(encrypted: string, key: string): string {
+    const data = Buffer.from(encrypted, "base64").toString()
+    let decrypted = ""
+    for (let i = 0; i < data.length; i++) {
+      const dataChar = data.charCodeAt(i)
+      const keyChar = key.charCodeAt(i % key.length)
+      decrypted += String.fromCharCode(dataChar ^ keyChar)
+    }
+    return decrypted
+  }
+
+  /**
+   * Create data hash for integrity verification
+   */
+  static createHash(data: string): string {
+    let hash = 0
+    for (let i = 0; i < data.length; i++) {
+      const char = data.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32bit integer
+    }
+    return hash.toString(16)
+  }
+}
