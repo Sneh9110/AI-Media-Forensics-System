@@ -480,5 +480,55 @@ class CollaborationService {
   }
 }
 
+/**
+ * Retry mechanism for failed network requests
+ * Implements exponential backoff strategy
+ */
+export class RetryHandler {
+  private readonly maxRetries: number = 3
+  private readonly baseDelay: number = 1000 // ms
+  private readonly maxDelay: number = 10000 // ms
+
+  async executeWithRetry<T>(
+    operation: () => Promise<T>,
+    operationName: string = "operation"
+  ): Promise<T> {
+    let lastError: Error | null = null
+
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      try {
+        return await operation()
+      } catch (error) {
+        lastError = error as Error
+
+        if (attempt < this.maxRetries) {
+          const delay = Math.min(
+            this.baseDelay * Math.pow(2, attempt),
+            this.maxDelay
+          )
+          await this.sleep(delay)
+        }
+      }
+    }
+
+    throw new Error(
+      `${operationName} failed after ${this.maxRetries + 1} attempts: ${lastError?.message}`
+    )
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  getRetryConfig(): { maxRetries: number; baseDelay: number; maxDelay: number } {
+    return {
+      maxRetries: this.maxRetries,
+      baseDelay: this.baseDelay,
+      maxDelay: this.maxDelay,
+    }
+  }
+}
+
 // Export singleton instance
 export const collaborationService = new CollaborationService()
+export const retryHandler = new RetryHandler()
