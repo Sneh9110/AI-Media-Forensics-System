@@ -156,4 +156,51 @@ export class AdvancedSearchFilter {
   }
 }
 
+/**
+ * Rate limiter utility
+ * Prevents abuse and manages API request frequency
+ */
+export class RateLimiter {
+  private requests: Map<string, number[]> = new Map()
+  private readonly maxRequests: number
+  private readonly windowMs: number
+
+  constructor(maxRequests: number = 100, windowMs: number = 60000) {
+    this.maxRequests = maxRequests
+    this.windowMs = windowMs
+  }
+
+  isAllowed(clientId: string): boolean {
+    const now = Date.now()
+    const clientRequests = this.requests.get(clientId) || []
+
+    // Remove requests outside the time window
+    const validRequests = clientRequests.filter((timestamp) => now - timestamp < this.windowMs)
+
+    if (validRequests.length >= this.maxRequests) {
+      return false
+    }
+
+    validRequests.push(now)
+    this.requests.set(clientId, validRequests)
+    return true
+  }
+
+  getRemainingRequests(clientId: string): number {
+    const now = Date.now()
+    const clientRequests = this.requests.get(clientId) || []
+    const validRequests = clientRequests.filter((timestamp) => now - timestamp < this.windowMs)
+    return Math.max(0, this.maxRequests - validRequests.length)
+  }
+
+  reset(clientId?: string): void {
+    if (clientId) {
+      this.requests.delete(clientId)
+    } else {
+      this.requests.clear()
+    }
+  }
+}
+
 export const advancedSearch = new AdvancedSearchFilter()
+export const apiRateLimiter = new RateLimiter(100, 60000)
