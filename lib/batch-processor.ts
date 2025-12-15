@@ -430,5 +430,64 @@ class BatchProcessorEngine {
   }
 }
 
+/**
+ * Performance monitoring utility
+ * Tracks execution time and resource usage
+ */
+export class PerformanceMonitor {
+  private startTimes: Map<string, number> = new Map()
+  private metrics: Map<string, { duration: number; count: number }> = new Map()
+
+  start(operationId: string): void {
+    this.startTimes.set(operationId, performance.now())
+  }
+
+  end(operationId: string): number {
+    const startTime = this.startTimes.get(operationId)
+    if (!startTime) return 0
+
+    const duration = performance.now() - startTime
+    const existing = this.metrics.get(operationId) || { duration: 0, count: 0 }
+
+    this.metrics.set(operationId, {
+      duration: existing.duration + duration,
+      count: existing.count + 1,
+    })
+
+    this.startTimes.delete(operationId)
+    return duration
+  }
+
+  getStats(operationId?: string): Record<string, { avgTime: number; totalTime: number; count: number }> {
+    if (operationId) {
+      const metric = this.metrics.get(operationId)
+      if (!metric) return {}
+      return {
+        [operationId]: {
+          avgTime: metric.duration / metric.count,
+          totalTime: metric.duration,
+          count: metric.count,
+        },
+      }
+    }
+
+    const stats: Record<string, { avgTime: number; totalTime: number; count: number }> = {}
+    for (const [key, metric] of this.metrics) {
+      stats[key] = {
+        avgTime: metric.duration / metric.count,
+        totalTime: metric.duration,
+        count: metric.count,
+      }
+    }
+    return stats
+  }
+
+  reset(): void {
+    this.metrics.clear()
+    this.startTimes.clear()
+  }
+}
+
 // Export singleton instance
 export const batchProcessor = new BatchProcessorEngine()
+export const performanceMonitor = new PerformanceMonitor()
