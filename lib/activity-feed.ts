@@ -293,5 +293,75 @@ class ActivityFeedService {
   }
 }
 
+/**
+ * Notification system for user alerts
+ */
+export interface Notification {
+  id: string
+  userId: string
+  type: "info" | "success" | "warning" | "error"
+  title: string
+  message: string
+  timestamp: Date
+  read: boolean
+  actionUrl?: string
+  actionLabel?: string
+}
+
+export class NotificationService {
+  private notifications: Map<string, Notification[]> = new Map()
+  private listeners: Map<string, ((notification: Notification) => void)[]> = new Map()
+
+  createNotification(userId: string, notification: Omit<Notification, "id" | "timestamp" | "read">): Notification {
+    const notif: Notification = {
+      ...notification,
+      id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      read: false,
+    }
+
+    const userNotifications = this.notifications.get(userId) || []
+    userNotifications.unshift(notif)
+    this.notifications.set(userId, userNotifications)
+
+    // Trigger listeners
+    const userListeners = this.listeners.get(userId) || []
+    userListeners.forEach((listener) => listener(notif))
+
+    return notif
+  }
+
+  getNotifications(userId: string, unreadOnly: boolean = false): Notification[] {
+    const userNotifications = this.notifications.get(userId) || []
+    return unreadOnly ? userNotifications.filter((n) => !n.read) : userNotifications
+  }
+
+  markAsRead(userId: string, notificationId: string): void {
+    const userNotifications = this.notifications.get(userId) || []
+    const notification = userNotifications.find((n) => n.id === notificationId)
+    if (notification) {
+      notification.read = true
+    }
+  }
+
+  clearNotifications(userId: string): void {
+    this.notifications.delete(userId)
+  }
+
+  subscribe(userId: string, callback: (notification: Notification) => void): () => void {
+    const userListeners = this.listeners.get(userId) || []
+    userListeners.push(callback)
+    this.listeners.set(userId, userListeners)
+
+    return () => {
+      const index = userListeners.indexOf(callback)
+      if (index > -1) {
+        userListeners.splice(index, 1)
+      }
+    }
+  }
+}
+
 // Export singleton instance
 export const activityFeedService = new ActivityFeedService()
+export const notificationService = new NotificationService()
