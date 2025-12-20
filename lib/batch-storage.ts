@@ -276,5 +276,72 @@ class BatchStorageService {
   }
 }
 
+/**
+ * File validation utility for upload processing
+ * Validates file size, type, and content
+ */
+export class FileValidator {
+  private readonly MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+  private readonly ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm"]
+  private readonly ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm"]
+
+  validateFile(file: File): { valid: boolean; errors: string[] } {
+    const errors: string[] = []
+
+    // Check file size
+    if (file.size > this.MAX_FILE_SIZE) {
+      errors.push(`File size exceeds ${this.MAX_FILE_SIZE / 1024 / 1024}MB limit`)
+    }
+
+    // Check MIME type
+    if (!this.ALLOWED_TYPES.includes(file.type)) {
+      errors.push(`File type '${file.type}' is not allowed`)
+    }
+
+    // Check extension
+    const extension = this.getFileExtension(file.name)
+    if (!this.ALLOWED_EXTENSIONS.includes(extension.toLowerCase())) {
+      errors.push(`File extension '${extension}' is not allowed`)
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    }
+  }
+
+  validateMultipleFiles(files: File[]): {
+    valid: File[]
+    invalid: { file: File; errors: string[] }[]
+  } {
+    const valid: File[] = []
+    const invalid: { file: File; errors: string[] }[] = []
+
+    for (const file of files) {
+      const validation = this.validateFile(file)
+      if (validation.valid) {
+        valid.push(file)
+      } else {
+        invalid.push({ file, errors: validation.errors })
+      }
+    }
+
+    return { valid, invalid }
+  }
+
+  private getFileExtension(filename: string): string {
+    const lastDot = filename.lastIndexOf(".")
+    return lastDot === -1 ? "" : filename.substring(lastDot)
+  }
+
+  getSupportedFormats(): { types: string[]; extensions: string[] } {
+    return {
+      types: this.ALLOWED_TYPES,
+      extensions: this.ALLOWED_EXTENSIONS,
+    }
+  }
+}
+
 // Export singleton instance
 export const batchStorage = new BatchStorageService()
+export const fileValidator = new FileValidator()
