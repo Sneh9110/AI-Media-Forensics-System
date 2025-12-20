@@ -193,3 +193,67 @@ export function getEndpointByPath(path: string): APIEndpoint | undefined {
 export function getAllEndpoints(): APIEndpoint[] {
   return API_ENDPOINTS
 }
+/**
+ * Data export utility for analysis results
+ * Supports CSV, JSON, and XML formats
+ */
+export class DataExporter {
+  exportToCSV<T>(data: T[], headers: (keyof T)[]): string {
+    const csvHeaders = headers.join(",")
+    const csvRows = data.map((item) =>
+      headers
+        .map((header) => {
+          const value = item[header]
+          const stringValue = typeof value === "string" ? value : JSON.stringify(value)
+          return `"${stringValue.replace(/"/g, '""')}"`
+        })
+        .join(",")
+    )
+
+    return [csvHeaders, ...csvRows].join("\n")
+  }
+
+  exportToJSON<T>(data: T[], pretty: boolean = true): string {
+    return pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+  }
+
+  exportToXML<T>(data: T[], rootElement: string = "root"): string {
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<${rootElement}>\n`
+
+    for (const item of data) {
+      xml += "  <item>\n"
+      for (const [key, value] of Object.entries(item || {})) {
+        const stringValue = typeof value === "string" ? value : JSON.stringify(value)
+        xml += `    <${key}>${stringValue}</${key}>\n`
+      }
+      xml += "  </item>\n"
+    }
+
+    xml += `</${rootElement}>`
+    return xml
+  }
+
+  downloadCSV<T>(data: T[], headers: (keyof T)[], filename: string): void {
+    const csv = this.exportToCSV(data, headers)
+    this.triggerDownload(csv, filename, "text/csv")
+  }
+
+  downloadJSON<T>(data: T[], filename: string): void {
+    const json = this.exportToJSON(data, true)
+    this.triggerDownload(json, filename, "application/json")
+  }
+
+  private triggerDownload(content: string, filename: string, type: string): void {
+    if (typeof window !== "undefined") {
+      const blob = new Blob([content], { type })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = filename
+      a.click()
+      window.URL.revokeObjectURL(url)
+    }
+  }
+}
+
+export const dataExporter = new DataExporter()
